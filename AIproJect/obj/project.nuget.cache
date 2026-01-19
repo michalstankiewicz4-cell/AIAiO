@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "Z/NfY6B5jB4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\micha\\source\\repos\\AItalk\\AIproJect\\AIproJect.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\micha\\.nuget\\packages\\microsoft.web.webview2\\1.0.3650.58\\microsoft.web.webview2.1.0.3650.58.nupkg.sha512"
+  ],
+  "logs": []
+}
