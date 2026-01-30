@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Router A/B</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="container">
+
+    <!-- PANEL A -->
+    <div class="panel" id="panelA">
+        <div class="panelHeader">
+            <h2>Panel A</h2>
+            <select class="modeSelect" data-side="A">
+                <option value="api">API</option>
+                <option value="iframe">Iframe</option>
+                <option value="poe">Poe</option>
+                <option value="ww2">WebView2</option>
+            </select>
+
+            <select class="modelSelect" data-side="A">
+                <option value="deepseek">DeepSeek</option>
+                <option value="gemini">Gemini</option>
+                <option value="claude">Claude</option>
+                <option value="llama">LLaMA</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <iframe id="frameA" class="frame"></iframe>
+        <textarea id="apiA" class="apiBox"></textarea>
+    </div>
+
+    <!-- PANEL CENTRALNY -->
+    <div id="shared">
+        <h2>Wspólny prompt</h2>
+        <textarea id="sharedInput"></textarea>
+
+        <div class="sharedButtons">
+            <button id="sendA">Wyślij do A</button>
+            <button id="sendB">Wyślij do B</button>
+        </div>
+
+        <div class="sharedButtons">
+            <button id="routeAtoB">A → B</button>
+            <button id="routeBtoA">B → A</button>
+        </div>
+
+        <div id="log"></div>
+    </div>
+
+    <!-- PANEL B -->
+    <div class="panel" id="panelB">
+        <div class="panelHeader">
+            <h2>Panel B</h2>
+            <select class="modeSelect" data-side="B">
+                <option value="api">API</option>
+                <option value="iframe">Iframe</option>
+                <option value="poe">Poe</option>
+                <option value="ww2">WebView2</option>
+            </select>
+
+            <select class="modelSelect" data-side="B">
+                <option value="gemini">Gemini</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="claude">Claude</option>
+                <option value="llama">LLaMA</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <iframe id="frameB" class="frame"></iframe>
+        <textarea id="apiB" class="apiBox"></textarea>
+    </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

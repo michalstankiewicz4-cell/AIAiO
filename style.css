@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: Consolas, monospace;
+}
+
+#container {
+    display: flex;
+    height: 100vh;
+}
+
+.panel {
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #333;
+}
+
+#panelB {
+    border-right: none;
+}
+
+.panelHeader {
+    padding: 10px;
+    background: #222;
+    border-bottom: 1px solid #333;
+}
+
+.panelHeader h2 {
+    margin: 0 0 10px 0;
+}
+
+select {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 5px;
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+}
+
+.frame {
+    flex: 1;
+    border: none;
+    display: none;
+}
+
+.apiBox {
+    flex: 1;
+    display: none;
+    background: #222;
+    color: #eee;
+    border: none;
+    padding: 10px;
+    resize: none;
+}
+
+#shared {
+    width: 34%;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+}
+
+#shared h2 {
+    margin: 10px;
+}
+
+#sharedInput {
+    height: 120px;
+    margin: 10px;
+    background: #222;
+    color: #eee;
+    border: none;
+    padding: 10px;
+    resize: none;
+}
+
+.sharedButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+button {
+    padding: 10px;
+    background: #444;
+    color: #eee;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #666;
+}
+
+#log {
+    flex: 1;
+    margin: 10px;
+    padding: 10px;
+    background: #181818;
+    overflow-y: auto;
+}
