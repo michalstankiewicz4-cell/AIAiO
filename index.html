@@ -13,6 +13,7 @@
     <div class="panel" id="panelA">
         <div class="panelHeader">
             <h2>Panel A</h2>
+
             <select class="modeSelect" data-side="A">
                 <option value="api">API</option>
                 <option value="iframe">Iframe</option>
@@ -21,13 +22,19 @@
             </select>
 
             <select class="modelSelect" data-side="A">
-                <option value="openrouter">OpenRouter (DeepSeek)</option>
+                <!-- API MODELS -->
+                <option value="openrouter">OpenRouter (DeepSeek Chat)</option>
                 <option value="claude_or">Claude 3.7 Sonnet (OpenRouter)</option>
-                <option value="deepseek">DeepSeek</option>
-                <option value="gemini">Gemini</option>
-                <option value="claude">Claude</option>
-                <option value="llama">LLaMA</option>
-                <option value="custom">Custom</option>
+                <option value="qwen_or">Qwen 2.5 72B (OpenRouter)</option>
+                <option value="llama_or">LLaMA 3.1 405B (OpenRouter)</option>
+                <option value="deepseek">DeepSeek API</option>
+                <option value="gemini">Gemini API</option>
+
+                <!-- IFRAME MODELS -->
+                <option value="claude">Claude (Poe)</option>
+                <option value="llama">LLaMA (HF Chat)</option>
+                <option value="qwen">Qwen (qwenlm.ai)</option>
+                <option value="custom">Custom URL</option>
             </select>
         </div>
 
@@ -51,8 +58,8 @@
         </div>
 
         <div class="sharedButtons">
-            <button id="pingGemini">Ping Gemini</button>
-            <button id="pingDeepSeek">Ping DeepSeek</button>
+            <button id="pingA">Ping A</button>
+            <button id="pingB">Ping B</button>
         </div>
 
         <div id="log"></div>
@@ -62,6 +69,7 @@
     <div class="panel" id="panelB">
         <div class="panelHeader">
             <h2>Panel B</h2>
+
             <select class="modeSelect" data-side="B">
                 <option value="api">API</option>
                 <option value="iframe">Iframe</option>
@@ -70,13 +78,19 @@
             </select>
 
             <select class="modelSelect" data-side="B">
-                <option value="openrouter">OpenRouter (DeepSeek)</option>
+                <!-- API MODELS -->
+                <option value="openrouter">OpenRouter (DeepSeek Chat)</option>
                 <option value="claude_or">Claude 3.7 Sonnet (OpenRouter)</option>
-                <option value="gemini">Gemini</option>
-                <option value="deepseek">DeepSeek</option>
-                <option value="claude">Claude</option>
-                <option value="llama">LLaMA</option>
-                <option value="custom">Custom</option>
+                <option value="qwen_or">Qwen 2.5 72B (OpenRouter)</option>
+                <option value="llama_or">LLaMA 3.1 405B (OpenRouter)</option>
+                <option value="deepseek">DeepSeek API</option>
+                <option value="gemini">Gemini API</option>
+
+                <!-- IFRAME MODELS -->
+                <option value="claude">Claude (Poe)</option>
+                <option value="llama">LLaMA (HF Chat)</option>
+                <option value="qwen">Qwen (qwenlm.ai)</option>
+                <option value="custom">Custom URL</option>
             </select>
         </div>
 

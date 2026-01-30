@@ -24,12 +24,8 @@ function setPanelMode(side, mode, model) {
         if (model === "gemini") frame.src = "https://gemini.google.com/app";
         if (model === "deepseek") frame.src = "https://chat.deepseek.com/";
         if (model === "llama") frame.src = "https://huggingface.co/chat/";
+        if (model === "qwen") frame.src = "https://chat.qwenlm.ai/";
         if (model === "custom") frame.src = prompt("Podaj URL:");
-
-        if (model === "copilot") {
-            frame.src = "";
-            log("Copilot nie działa w iframe");
-        }
     }
 
     if (mode === "poe") {
@@ -85,15 +81,11 @@ async function callDeepSeek(prompt) {
             })
         });
 
-        if (!res.ok) {
-            log("❌ DeepSeek HTTP " + res.status);
-            return "Błąd DeepSeek: " + res.status;
-        }
+        if (!res.ok) return "Błąd DeepSeek: " + res.status;
 
         const data = await res.json();
         return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
-    } catch (e) {
-        log("❌ DeepSeek wyjątek: " + e.message);
+    } catch {
         return "Błąd połączenia z DeepSeek";
     }
 }
@@ -105,27 +97,23 @@ async function callGemini(prompt) {
     const key = window.CONFIG.gemini_key;
     if (!key) return "Brak klucza Gemini";
 
-    const url =
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            }
+        );
 
-        if (!res.ok) {
-            log("❌ Gemini HTTP " + res.status);
-            return "Błąd Gemini: " + res.status;
-        }
+        if (!res.ok) return "Błąd Gemini: " + res.status;
 
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "Brak odpowiedzi";
-    } catch (e) {
-        log("❌ Gemini wyjątek: " + e.message);
+    } catch {
         return "Błąd połączenia z Gemini";
     }
 }
@@ -152,21 +140,17 @@ async function callOpenRouter(prompt) {
             })
         });
 
-        if (!res.ok) {
-            log("❌ OpenRouter HTTP " + res.status);
-            return "Błąd OpenRouter: " + res.status;
-        }
+        if (!res.ok) return "Błąd OpenRouter: " + res.status;
 
         const data = await res.json();
         return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
-    } catch (e) {
-        log("❌ OpenRouter wyjątek: " + e.message);
+    } catch {
         return "Błąd połączenia z OpenRouter";
     }
 }
 
 // =========================
-// API: CLAUDE (OpenRouter) — FIXED
+// API: CLAUDE 3.7 SONNET (OpenRouter)
 // =========================
 async function callClaudeOR(prompt) {
     const key = window.CONFIG.openrouter_key;
@@ -182,25 +166,82 @@ async function callClaudeOR(prompt) {
                 "X-Title": "AI Router A/B"
             },
             body: JSON.stringify({
-                model: "anthropic/claude-3.7-sonnet",
-                max_tokens: 512,   // <── KLUCZOWE! Bez tego jest 402.
-                messages: [
-                    { role: "user", content: prompt }
-                ]
+                model: "anthropic/claude-3.7-sonnet:beta",
+                max_tokens: 512,
+                messages: [{ role: "user", content: prompt }]
             })
         });
 
-        if (!res.ok) {
-            const err = await res.text();
-            log("❌ Claude OR HTTP " + res.status + " → " + err);
-            return "Błąd Claude OR: " + res.status;
-        }
+        if (!res.ok) return "Błąd Claude OR: " + res.status;
 
         const data = await res.json();
         return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
-    } catch (e) {
-        log("❌ Claude OR wyjątek: " + e.message);
+    } catch {
         return "Błąd połączenia z Claude OR";
+    }
+}
+
+// =========================
+// API: QWEN 2.5 72B (OpenRouter)
+// =========================
+async function callQwenOR(prompt) {
+    const key = window.CONFIG.openrouter_key;
+    if (!key) return "Brak klucza OpenRouter";
+
+    try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "AI Router A/B"
+            },
+            body: JSON.stringify({
+                model: "qwen/qwen-2.5-72b-instruct",
+                max_tokens: 512,
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
+
+        if (!res.ok) return "Błąd Qwen OR: " + res.status;
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+    } catch {
+        return "Błąd połączenia z Qwen OR";
+    }
+}
+
+// =========================
+// API: LLAMA 3.1 405B (OpenRouter)
+// =========================
+async function callLlamaOR(prompt) {
+    const key = window.CONFIG.openrouter_key;
+    if (!key) return "Brak klucza OpenRouter";
+
+    try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "AI Router A/B"
+            },
+            body: JSON.stringify({
+                model: "meta-llama/llama-3.1-405b-instruct",
+                max_tokens: 512,
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
+
+        if (!res.ok) return "Błąd LLaMA OR: " + res.status;
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+    } catch {
+        return "Błąd połączenia z LLaMA OR";
     }
 }
 
@@ -209,11 +250,14 @@ async function callClaudeOR(prompt) {
 // =========================
 async function sendToAPI(side, prompt) {
     const model = document.querySelector(`.modelSelect[data-side="${side}"]`).value;
+
     if (model === "claude_or") return await callClaudeOR(prompt);
+    if (model === "qwen_or") return await callQwenOR(prompt);
+    if (model === "llama_or") return await callLlamaOR(prompt);
+
     if (model === "deepseek") return await callDeepSeek(prompt);
     if (model === "gemini") return await callGemini(prompt);
     if (model === "openrouter") return await callOpenRouter(prompt);
-    if (model === "openrouter_reasoner") return await callOpenRouterReasoner(prompt);
 
     return "Model API nieobsługiwany";
 }
@@ -279,12 +323,11 @@ document.getElementById("routeBtoA").onclick = async () => {
 };
 
 // =========================
-// PING A — działa z każdym modelem
+// PING A
 // =========================
-document.getElementById("pingGemini").onclick = async () => {
+document.getElementById("pingA").onclick = async () => {
     log("Ping A");
 
-    const model = document.querySelector('.modelSelect[data-side="A"]').value;
     const mode = document.querySelector('.modeSelect[data-side="A"]').value;
 
     if (mode !== "api") {
@@ -297,12 +340,11 @@ document.getElementById("pingGemini").onclick = async () => {
 };
 
 // =========================
-// PING B — działa z każdym modelem
+// PING B
 // =========================
-document.getElementById("pingDeepSeek").onclick = async () => {
+document.getElementById("pingB").onclick = async () => {
     log("Ping B");
 
-    const model = document.querySelector('.modelSelect[data-side="B"]').value;
     const mode = document.querySelector('.modeSelect[data-side="B"]').value;
 
     if (mode !== "api") {
@@ -325,4 +367,4 @@ document.querySelector('.modeSelect[data-side="B"]').value = "api";
 document.querySelector('.modelSelect[data-side="B"]').value = "gemini";
 setPanelMode("B", "api", "gemini");
 
-log("Domyślne ustawienia: A = OpenRouter, B = Gemini API");
+log("Domyślne ustawienia: A = OpenRouter (DeepSeek Chat), B = Gemini API");
