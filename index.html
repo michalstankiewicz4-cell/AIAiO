@@ -21,6 +21,8 @@
             </select>
 
             <select class="modelSelect" data-side="A">
+                <option value="openrouter">OpenRouter (DeepSeek)</option>
+                <option value="claude_or">Claude 3.7 Sonnet (OpenRouter)</option>
                 <option value="deepseek">DeepSeek</option>
                 <option value="gemini">Gemini</option>
                 <option value="claude">Claude</option>
@@ -48,6 +50,11 @@
             <button id="routeBtoA">B → A</button>
         </div>
 
+        <div class="sharedButtons">
+            <button id="pingGemini">Ping Gemini</button>
+            <button id="pingDeepSeek">Ping DeepSeek</button>
+        </div>
+
         <div id="log"></div>
     </div>
 
@@ -63,6 +70,8 @@
             </select>
 
             <select class="modelSelect" data-side="B">
+                <option value="openrouter">OpenRouter (DeepSeek)</option>
+                <option value="claude_or">Claude 3.7 Sonnet (OpenRouter)</option>
                 <option value="gemini">Gemini</option>
                 <option value="deepseek">DeepSeek</option>
                 <option value="claude">Claude</option>

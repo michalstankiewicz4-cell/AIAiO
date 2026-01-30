@@ -72,24 +72,34 @@ async function callDeepSeek(prompt) {
     const key = window.CONFIG.deepseek_key;
     if (!key) return "Brak klucza DeepSeek";
 
-    const res = await fetch("https://api.deepseek.com/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${key}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "deepseek-chat",
-            messages: [{ role: "user", content: prompt }]
-        })
-    });
+    try {
+        const res = await fetch("https://api.deepseek.com/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
 
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+        if (!res.ok) {
+            log("❌ DeepSeek HTTP " + res.status);
+            return "Błąd DeepSeek: " + res.status;
+        }
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+    } catch (e) {
+        log("❌ DeepSeek wyjątek: " + e.message);
+        return "Błąd połączenia z DeepSeek";
+    }
 }
 
 // =========================
-// API: GEMINI (POPRAWIONY ENDPOINT)
+// API: GEMINI
 // =========================
 async function callGemini(prompt) {
     const key = window.CONFIG.gemini_key;
@@ -98,16 +108,100 @@ async function callGemini(prompt) {
     const url =
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
 
-    const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-        })
-    });
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
 
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Brak odpowiedzi";
+        if (!res.ok) {
+            log("❌ Gemini HTTP " + res.status);
+            return "Błąd Gemini: " + res.status;
+        }
+
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Brak odpowiedzi";
+    } catch (e) {
+        log("❌ Gemini wyjątek: " + e.message);
+        return "Błąd połączenia z Gemini";
+    }
+}
+
+// =========================
+// API: OPENROUTER (DeepSeek Chat)
+// =========================
+async function callOpenRouter(prompt) {
+    const key = window.CONFIG.openrouter_key;
+    if (!key) return "Brak klucza OpenRouter";
+
+    try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "AI Router A/B"
+            },
+            body: JSON.stringify({
+                model: "deepseek/deepseek-chat",
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
+
+        if (!res.ok) {
+            log("❌ OpenRouter HTTP " + res.status);
+            return "Błąd OpenRouter: " + res.status;
+        }
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+    } catch (e) {
+        log("❌ OpenRouter wyjątek: " + e.message);
+        return "Błąd połączenia z OpenRouter";
+    }
+}
+
+// =========================
+// API: CLAUDE (OpenRouter) — FIXED
+// =========================
+async function callClaudeOR(prompt) {
+    const key = window.CONFIG.openrouter_key;
+    if (!key) return "Brak klucza OpenRouter";
+
+    try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${key}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "AI Router A/B"
+            },
+            body: JSON.stringify({
+                model: "anthropic/claude-3.7-sonnet",
+                max_tokens: 512,   // <── KLUCZOWE! Bez tego jest 402.
+                messages: [
+                    { role: "user", content: prompt }
+                ]
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            log("❌ Claude OR HTTP " + res.status + " → " + err);
+            return "Błąd Claude OR: " + res.status;
+        }
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "Brak odpowiedzi";
+    } catch (e) {
+        log("❌ Claude OR wyjątek: " + e.message);
+        return "Błąd połączenia z Claude OR";
+    }
 }
 
 // =========================
@@ -115,9 +209,11 @@ async function callGemini(prompt) {
 // =========================
 async function sendToAPI(side, prompt) {
     const model = document.querySelector(`.modelSelect[data-side="${side}"]`).value;
-
+    if (model === "claude_or") return await callClaudeOR(prompt);
     if (model === "deepseek") return await callDeepSeek(prompt);
     if (model === "gemini") return await callGemini(prompt);
+    if (model === "openrouter") return await callOpenRouter(prompt);
+    if (model === "openrouter_reasoner") return await callOpenRouterReasoner(prompt);
 
     return "Model API nieobsługiwany";
 }
@@ -183,14 +279,50 @@ document.getElementById("routeBtoA").onclick = async () => {
 };
 
 // =========================
+// PING A — działa z każdym modelem
+// =========================
+document.getElementById("pingGemini").onclick = async () => {
+    log("Ping A");
+
+    const model = document.querySelector('.modelSelect[data-side="A"]').value;
+    const mode = document.querySelector('.modeSelect[data-side="A"]').value;
+
+    if (mode !== "api") {
+        log("Tryb A nie jest API");
+        return;
+    }
+
+    const out = await sendToAPI("A", "ping");
+    log("A → " + out);
+};
+
+// =========================
+// PING B — działa z każdym modelem
+// =========================
+document.getElementById("pingDeepSeek").onclick = async () => {
+    log("Ping B");
+
+    const model = document.querySelector('.modelSelect[data-side="B"]').value;
+    const mode = document.querySelector('.modeSelect[data-side="B"]').value;
+
+    if (mode !== "api") {
+        log("Tryb B nie jest API");
+        return;
+    }
+
+    const out = await sendToAPI("B", "ping");
+    log("B → " + out);
+};
+
+// =========================
 // USTAWIENIA DOMYŚLNE
 // =========================
 document.querySelector('.modeSelect[data-side="A"]').value = "api";
-document.querySelector('.modelSelect[data-side="A"]').value = "deepseek";
-setPanelMode("A", "api", "deepseek");
+document.querySelector('.modelSelect[data-side="A"]').value = "openrouter";
+setPanelMode("A", "api", "openrouter");
 
 document.querySelector('.modeSelect[data-side="B"]').value = "api";
 document.querySelector('.modelSelect[data-side="B"]').value = "gemini";
 setPanelMode("B", "api", "gemini");
 
-log("Domyślne ustawienia: A = DeepSeek API, B = Gemini API");
+log("Domyślne ustawienia: A = OpenRouter, B = Gemini API");
